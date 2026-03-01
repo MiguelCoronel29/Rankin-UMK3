@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Perfil de Jugador - DBZ BT3</title>
+    <title>Perfil de Jugador - UMK3</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -59,15 +59,17 @@
 
 <script>
     const firebaseConfig = {
-        apiKey: "AIzaSyD_eT9VlLk_b1toTcva8w9NwU-FGjrEtEI",
-        authDomain: "ranking-dbz-bt3.firebaseapp.com",
-        databaseURL: "https://ranking-dbz-bt3-default-rtdb.firebaseio.com",
-        projectId: "ranking-dbz-bt3",
-        storageBucket: "ranking-dbz-bt3.firebasestorage.app",
-        messagingSenderId: "228731370543",
-        appId: "1:228731370543:web:ff3e418be283b6387edada"
+      apiKey: "AIzaSyBSmvBdsHLxpEDaLxqZa-nMQ3m9oAccPVQ",
+      authDomain: "ranking-umk3.firebaseapp.com",
+      databaseURL: "https://ranking-umk3-default-rtdb.firebaseio.com",
+      projectId: "ranking-umk3",
+      storageBucket: "ranking-umk3.firebasestorage.app",
+      messagingSenderId: "964361830430",
+      appId: "1:964361830430:web:b183cb5506153934be2e0f"
     };
-    firebase.initializeApp(firebaseConfig);
+    
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -224,3 +226,4 @@
 </script>
 </body>
 </html>
+
