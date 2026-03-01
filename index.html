@@ -289,7 +289,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     
     <script>
-        // --- CONFIGURACIÓN FIREBASE NUEVA ---
         const firebaseConfig = {
             apiKey: "AIzaSyBSmvBdsHLxpEDaLxqZa-nMQ3m9oAccPVQ",
             authDomain: "ranking-umk3.firebaseapp.com",
@@ -300,9 +299,9 @@
             appId: "1:964361830430:web:b183cb5506153934be2e0f"
         };
     
-        // Inicializa Firebase (versión compat)
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
 
         let players = [], history = [];
         const PAGE_SIZE = 10;
@@ -474,6 +473,7 @@
 </body>
 
 </html>
+
 
 
 
