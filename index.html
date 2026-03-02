@@ -354,6 +354,25 @@
             verificarSesion();  // ← AGREGA ESTA LÍNEA AQUÍ
         });
 
+        // === NUEVO: Listener para estados online/offline ===
+        db.ref('status').on('value', snapshot => {
+          const statusData = snapshot.val() || {};
+        
+          // Actualiza el punto para cada jugador visible en la tabla
+          document.querySelectorAll('[id^="status-"]').forEach(span => {
+            const playerName = span.id.replace('status-', '').replace(/_/g, ' '); // revierte el replace para comparar
+            const userStatus = statusData[playerName];
+        
+            if (userStatus && userStatus.online) {
+              span.innerHTML = '🟢';
+              span.style.color = '#4CAF50';
+            } else {
+              span.innerHTML = '⚪';
+              span.style.color = '#9E9E9E';
+            }
+          });
+        });
+
         function render() {
             const rankingEl = document.getElementById('ranking');
             const busqueda = document.getElementById('searchRanking').value.toLowerCase();
@@ -377,7 +396,12 @@
                 return `<tr>
       <td style="font-weight:bold; color:#aaa;">${pos}</td>
       <td>${getBanderaHTML(p.country)}</td>
-      <td><span class="player-link" onclick="openModal('${p.name}')">${p.name}</span></td>
+      <td>
+      <span class="player-link" onclick="openModal('${p.name}')">
+            ${p.name}
+            <span id="status-${p.name.replace(/[^a-zA-Z0-9]/g, '_')}" style="margin-left: 8px; font-size: 1.1em; vertical-align: middle;"></span>
+          </span>
+      </td>
       <td class="${r.class}">${r.name}</td>
       <td style="font-weight:bold;">${Math.round(p.elo)}</td>
       <td><div class="progress"><div class="progress-fill" style="width:${getProgress(p.elo, r)}%"></div></div></td>
@@ -498,6 +522,7 @@
 </body>
 
 </html>
+
 
 
 
