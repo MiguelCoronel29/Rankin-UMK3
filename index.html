@@ -253,6 +253,10 @@
       Jugadores en línea: <strong id="onlineCount">0</strong> 🟢
     </div>
 
+    <div id="offlineCounter" style="display: inline-block; background: rgba(158, 158, 158, 0.2); padding: 10px 20px; border-radius: 10px; font-size: 1.2rem; color: #9E9E9E; border: 1px solid #9E9E9E; margin: 10px auto; text-align: center;">
+      Jugadores desconectados: <strong id="offlineCount">0</strong> ⚪
+    </div>
+
     <div class="table-container">
         <table>
             <thead>
@@ -378,6 +382,10 @@
                 const onlinePlayers = Object.values(statusData).filter(s => s.online === true).length;
                 document.getElementById('onlineCount').innerText = onlinePlayers;
                 console.log("Jugadores online:", onlinePlayers); // opcional, para debug
+
+                    // Contador offline (nuevo)
+                const offlinePlayers = Object.values(statusData).filter(s => s.online === false).length;
+                document.getElementById('offlineCount').innerText = offlinePlayers;
             });
         });
         function render() {
@@ -527,6 +535,7 @@
 </body>
 
 </html>
+
 
 
 
