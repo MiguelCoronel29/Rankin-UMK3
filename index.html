@@ -384,7 +384,7 @@
                 console.log("Jugadores online:", onlinePlayers); // opcional, para debug
 
                     // Contador desconectados: TODOS los jugadores de /players MENOS los online
-              db.ref('players').once('value').then(playersSnapshot => {
+        db.ref('players').once('value').then(playersSnapshot => {
                 const allPlayers = playersSnapshot.val() || {};
                 const totalPlayers = Object.keys(allPlayers).length;
                 const disconnectedPlayers = totalPlayers - onlinePlayers;
@@ -539,6 +539,7 @@
 </body>
 
 </html>
+
 
 
 
