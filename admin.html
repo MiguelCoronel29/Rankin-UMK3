@@ -24,10 +24,6 @@
     })();
   </script>
 
-  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -331,27 +327,7 @@
     </div>
   </div>
 
- pal):
-HTML<!-- Firebase Compat -->
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBSmvBdsHLxpEDaLxqZa-nMQ3m9oAccPVQ",
-        authDomain: "ranking-umk3.firebaseapp.com",
-        databaseURL: "https://ranking-umk3-default-rtdb.firebaseio.com",
-        projectId: "ranking-umk3",
-        storageBucket: "ranking-umk3.firebasestorage.app",
-        messagingSenderId: "964361830430",
-        appId: "1:964361830430:web:b183cb5506153934be2e0f"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();  // ← Ahora sí existe
-
+ <script>
     // Función para autenticar al cargar la página
     function autenticarAdmin() {
       if (sessionStorage.getItem("admin_auth") === "true") {
@@ -682,10 +658,34 @@ HTML<!-- Firebase Compat -->
       } else { alert("No hay datos locales para migrar."); }
     };
     document.body.appendChild(btnMigrar);
+      
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+
+<script>
+    // --- CONFIGURACIÓN FIREBASE NUEVA PARA UMK3 ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBSmvBdsHLxpEDaLxqZa-nMQ3m9oAccPVQ",
+        authDomain: "ranking-umk3.firebaseapp.com",
+        databaseURL: "https://ranking-umk3-default-rtdb.firebaseio.com",
+        projectId: "ranking-umk3",
+        storageBucket: "ranking-umk3.firebasestorage.app",
+        messagingSenderId: "964361830430",
+        appId: "1:964361830430:web:b183cb5506153934be2e0f"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();  // ← Ahora existe
+
+    // ... (aquí pega el resto de tu código JS: autenticarAdmin, variables, funciones, etc.)
+</script>
   </script>
 </body>
 
 </html>
+
 
 
 
