@@ -404,18 +404,40 @@
             }
         }
 
-        // --- LÓGICA DE SESIÓN ---
         function verificarSesion() {
-            // CAMBIO CLAVE: Usamos "logged_user" para coincidir con login.html
             const nombre = localStorage.getItem("logged_user");
             const userBar = document.getElementById("user-bar");
             const loginPrompt = document.getElementById("login-prompt");
             const nameDisplay = document.getElementById("current-user-name");
-
+        
             if (nombre) {
                 userBar.style.display = "flex";
                 loginPrompt.style.display = "none";
                 nameDisplay.innerText = nombre;
+        
+                // === NUEVO: Marcar como ONLINE en Firebase ===
+                const statusRef = db.ref('status/' + nombre);
+        
+                // Marca como online inmediatamente
+                statusRef.set({
+                    online: true,
+                    lastActive: firebase.database.ServerValue.TIMESTAMP,
+                    device: navigator.userAgent  // opcional: para saber si es móvil/PC
+                }).then(() => {
+                    console.log(nombre + " marcado como ONLINE");
+                }).catch(err => {
+                    console.error("Error al marcar online:", err);
+                });
+        
+                // Cuando se desconecta (cierra pestaña, navegador, etc.)
+                statusRef.onDisconnect().set({
+                    online: false,
+                    lastActive: firebase.database.ServerValue.TIMESTAMP
+                }).then(() => {
+                    console.log("Configurado onDisconnect para " + nombre);
+                }).catch(err => {
+                    console.error("Error en onDisconnect:", err);
+                });
             } else {
                 userBar.style.display = "none";
                 loginPrompt.style.display = "block";
@@ -476,6 +498,7 @@
 </body>
 
 </html>
+
 
 
 
