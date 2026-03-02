@@ -383,9 +383,13 @@
                 document.getElementById('onlineCount').innerText = onlinePlayers;
                 console.log("Jugadores online:", onlinePlayers); // opcional, para debug
 
-                    // Contador offline (nuevo)
-                const offlinePlayers = Object.values(statusData).filter(s => s.online === false).length;
-                document.getElementById('offlineCount').innerText = offlinePlayers;
+                    // Contador desconectados: TODOS los jugadores de /players MENOS los online
+              db.ref('players').once('value').then(playersSnapshot => {
+                const allPlayers = playersSnapshot.val() || {};
+                const totalPlayers = Object.keys(allPlayers).length;
+                const disconnectedPlayers = totalPlayers - onlinePlayers;
+            
+                document.getElementById('offlineCount').innerText = disconnectedPlayers;
             });
         });
         function render() {
@@ -535,6 +539,7 @@
 </body>
 
 </html>
+
 
 
 
