@@ -303,6 +303,7 @@
     // Inicializa Firebase (versión compat)
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+        let alreadyMarkedOnline = {}; // objeto para marcar por usuario (evita repetir)
 
 
 
@@ -353,19 +354,16 @@
                         // Listener para status online/offline (solo una vez por carga + actualizaciones)
             db.ref('status').on('value', snapshot => {
               const statusData = snapshot.val() || {};
-            
-              // Evita bucles infinitos: solo actualiza si hay spans en la página
-              const spans = document.querySelectorAll('[id^="status-"]');
-              if (spans.length === 0) return; // No hay tabla renderizada aún, salimos
-            
-              spans.forEach(span => {
+              console.log("Status data recibida:", statusData); // log para ver si llega online: true
+
+              document.querySelectorAll('[id^="status-"]').forEach(span => {
                 const rawId = span.id.replace('status-', '');
-                const playerName = rawId.replace(/_/g, ' '); // reconstruye nombre original
-            
-                console.log("Actualizando status para:", playerName); // log temporal para debug
+                const playerName = rawId.replace(/_/g, ' '); // reconstruye nombre
             
                 const userStatus = statusData[playerName];
-                if (userStatus && userStatus.online) {
+                console.log("Actualizando para", playerName, ":", userStatus); // log debug
+            
+                if (userStatus && userStatus.online === true) {
                   span.innerHTML = '🟢';
                   span.style.color = '#4CAF50';
                 } else {
@@ -441,35 +439,32 @@
                 loginPrompt.style.display = "none";
                 nameDisplay.innerText = nombre;
         
-                // === NUEVO: Marcar como ONLINE en Firebase ===
-                const statusRef = db.ref('status/' + nombre);
+                // Marca online SOLO si no lo hizo antes para este usuario
+                if (!alreadyMarkedOnline[nombre]) {
+                    alreadyMarkedOnline[nombre] = true;
         
-                // Marca como online inmediatamente
-                statusRef.set({
-                    online: true,
-                    lastActive: firebase.database.ServerValue.TIMESTAMP,
-                    device: navigator.userAgent  // opcional: para saber si es móvil/PC
-                }).then(() => {
-                    console.log(nombre + " marcado como ONLINE");
-                }).catch(err => {
-                    console.error("Error al marcar online:", err);
-                });
+                    const statusRef = db.ref('status/' + nombre);
         
-                // Cuando se desconecta (cierra pestaña, navegador, etc.)
-                statusRef.onDisconnect().set({
-                    online: false,
-                    lastActive: firebase.database.ServerValue.TIMESTAMP
-                }).then(() => {
-                    console.log("Configurado onDisconnect para " + nombre);
-                }).catch(err => {
-                    console.error("Error en onDisconnect:", err);
-                });
+                    statusRef.set({
+                        online: true,
+                        lastActive: firebase.database.ServerValue.TIMESTAMP,
+                        device: navigator.userAgent
+                    }).then(() => {
+                        console.log(nombre + " marcado como ONLINE (solo una vez)");
+                    }).catch(err => console.error("Error al marcar online:", err));
+        
+                    statusRef.onDisconnect().set({
+                        online: false,
+                        lastActive: firebase.database.ServerValue.TIMESTAMP
+                    }).then(() => {
+                        console.log("onDisconnect configurado para " + nombre);
+                    }).catch(err => console.error("Error en onDisconnect:", err));
+                }
             } else {
                 userBar.style.display = "none";
                 loginPrompt.style.display = "block";
             }
         }
-
         function cerrarSesion() {
             if (confirm("¿Cerrar sesión de guerrero?")) {
                 localStorage.removeItem("logged_user");
@@ -524,6 +519,7 @@
 </body>
 
 </html>
+
 
 
 
