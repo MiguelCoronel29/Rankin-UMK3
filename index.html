@@ -356,13 +356,13 @@
               const statusData = snapshot.val() || {};
               console.log("Status data recibida:", statusData); // log para ver si llega online: true
 
-              document.querySelectorAll('[id^="status-"]').forEach(span => {
+            document.querySelectorAll('[id^="status-"]').forEach(span => {
                 const rawId = span.id.replace('status-', '');
-                const playerName = rawId.replace(/_/g, ' '); // reconstruye nombre
+                const playerName = rawId; // sin replace, usa exactamente el ID (ETR_MICKY)
+            
+                console.log("Span ID:", span.id, "Nombre usado:", playerName, "Status:", statusData[playerName]);
             
                 const userStatus = statusData[playerName];
-                console.log("Actualizando para", playerName, ":", userStatus); // log debug
-            
                 if (userStatus && userStatus.online === true) {
                   span.innerHTML = '🟢';
                   span.style.color = '#4CAF50';
@@ -451,19 +451,46 @@
                         device: navigator.userAgent
                     }).then(() => {
                         console.log(nombre + " marcado como ONLINE (solo una vez)");
-                    }).catch(err => console.error("Error al marcar online:", err));
+                    }).catch(err => {
+                        console.error("Error al marcar online:", err);
+                    });
         
                     statusRef.onDisconnect().set({
                         online: false,
                         lastActive: firebase.database.ServerValue.TIMESTAMP
                     }).then(() => {
                         console.log("onDisconnect configurado para " + nombre);
-                    }).catch(err => console.error("Error en onDisconnect:", err));
+                    }).catch(err => {
+                        console.error("Error en onDisconnect:", err);
+                    });
+        
+                    // Listener de status: se ejecuta DESPUÉS del set() y onDisconnect()
+                    db.ref('status').on('value', snapshot => {
+                        const statusData = snapshot.val() || {};
+                        console.log("Status data recibida después de set:", statusData);
+        
+                        document.querySelectorAll('[id^="status-"]').forEach(span => {
+                            const rawId = span.id.replace('status-', '');
+                            const playerName = rawId; // sin replace adicional, usa el ID tal cual
+        
+                            console.log("Actualizando para", playerName, ":", statusData[playerName]);
+        
+                            const userStatus = statusData[playerName];
+                            if (userStatus && userStatus.online === true) {
+                                span.innerHTML = '🟢';
+                                span.style.color = '#4CAF50';
+                            } else {
+                                span.innerHTML = '⚪';
+                                span.style.color = '#9E9E9E';
+                            }
+                        });
+                    });
                 }
             } else {
                 userBar.style.display = "none";
                 loginPrompt.style.display = "block";
             }
+        }
         }
         function cerrarSesion() {
             if (confirm("¿Cerrar sesión de guerrero?")) {
@@ -519,6 +546,7 @@
 </body>
 
 </html>
+
 
 
 
