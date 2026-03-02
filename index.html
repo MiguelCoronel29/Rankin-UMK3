@@ -342,38 +342,34 @@
             const data = snapshot.val();
             players = data?.players || [];
             history = data?.history || [];
-
-            // Ordenar history descendente por id (nuevos primero) - FIX: parseInt para ids strings
             history.sort((a, b) => {
                 const timeA = a.timestamp || parseInt(a.id) || 0;
                 const timeB = b.timestamp || parseInt(b.id) || 0;
-                return timeB - timeA; // descendente: nuevos primero
+                return timeB - timeA;
             });
-
             render();
-            verificarSesion();  // ← AGREGA ESTA LÍNEA AQUÍ
-
-
-        // === NUEVO: Listener para estados online/offline ===
-        db.ref('status').on('value', snapshot => {
-          const statusData = snapshot.val() || {};
+            verificarSesion();
         
-              // Actualiza el punto para cada jugador visible en la tabla
+            // === Listener de status: se ejecuta DESPUÉS de render y verificarSesion ===
+            db.ref('status').once('value').then(snapshot => {
+              const statusData = snapshot.val() || {};
+        
               document.querySelectorAll('[id^="status-"]').forEach(span => {
-                const playerName = span.id.replace('status-', '').replace(/_/g, ' '); // revierte el replace para comparar
+                const playerName = span.id.replace('status-', '').replace(/_/g, ' ');
                 const userStatus = statusData[playerName];
-            
+        
                 if (userStatus && userStatus.online) {
                   span.innerHTML = '🟢';
                   span.style.color = '#4CAF50';
                 } else {
                   span.innerHTML = '⚪';
                   span.style.color = '#9E9E9E';
-               }
-            });
-          });
+                }
+              });
+        
+              console.log("Puntos de status actualizados después de render");
+            }).catch(err => console.error("Error al leer status:", err));
         });
-
         function render() {
             const rankingEl = document.getElementById('ranking');
             const busqueda = document.getElementById('searchRanking').value.toLowerCase();
@@ -523,6 +519,7 @@
 </body>
 
 </html>
+
 
 
 
