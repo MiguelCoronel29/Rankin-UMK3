@@ -249,6 +249,10 @@
 
     <input id="searchRanking" placeholder="🔍 Buscar guerrero...">
 
+    <div id="onlineCounter" style="text-align: center; margin: 15px 0; font-size: 1.2rem; font-weight: bold; color: #FFD700;">
+      Jugadores en línea: <span id="onlineCount">0</span> 🟢
+    </div>
+
     <div class="table-container">
         <table>
             <thead>
@@ -370,6 +374,10 @@
                   span.style.color = '#9E9E9E';
                 }
               });
+                    // Contador de jugadores online
+                const onlinePlayers = Object.values(statusData).filter(s => s.online === true).length;
+                document.getElementById('onlineCount').innerText = onlinePlayers;
+                console.log("Jugadores online:", onlinePlayers); // opcional, para debug
             });
         });
         function render() {
@@ -519,6 +527,7 @@
 </body>
 
 </html>
+
 
 
 
