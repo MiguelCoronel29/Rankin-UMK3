@@ -352,24 +352,25 @@
 
             render();
             verificarSesion();  // ← AGREGA ESTA LÍNEA AQUÍ
-        });
+
 
         // === NUEVO: Listener para estados online/offline ===
         db.ref('status').on('value', snapshot => {
           const statusData = snapshot.val() || {};
         
-          // Actualiza el punto para cada jugador visible en la tabla
-          document.querySelectorAll('[id^="status-"]').forEach(span => {
-            const playerName = span.id.replace('status-', '').replace(/_/g, ' '); // revierte el replace para comparar
-            const userStatus = statusData[playerName];
-        
-            if (userStatus && userStatus.online) {
-              span.innerHTML = '🟢';
-              span.style.color = '#4CAF50';
-            } else {
-              span.innerHTML = '⚪';
-              span.style.color = '#9E9E9E';
-            }
+              // Actualiza el punto para cada jugador visible en la tabla
+              document.querySelectorAll('[id^="status-"]').forEach(span => {
+                const playerName = span.id.replace('status-', '').replace(/_/g, ' '); // revierte el replace para comparar
+                const userStatus = statusData[playerName];
+            
+                if (userStatus && userStatus.online) {
+                  span.innerHTML = '🟢';
+                  span.style.color = '#4CAF50';
+                } else {
+                  span.innerHTML = '⚪';
+                  span.style.color = '#9E9E9E';
+               }
+            });
           });
         });
 
@@ -522,6 +523,7 @@
 </body>
 
 </html>
+
 
 
 
