@@ -189,6 +189,81 @@
             color: white;
             box-sizing: border-box;
         }
+
+        .table-container {
+              background: rgba(0, 0, 0, 0.6);
+              padding: 15px;
+              border-radius: 12px;
+              box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+              overflow-x: auto; /* ya lo tenés, bien */
+              border: 1px solid #333;
+              margin: 0 auto;
+              max-width: 100%; /* evita que se salga en móvil */
+            }
+            
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 0.9rem;
+              min-width: 600px; /* fuerza scroll horizontal si es muy ancho */
+            }
+            
+            @media (max-width: 768px) {
+              table {
+                font-size: 0.8rem; /* reduce tamaño en móvil */
+              }
+              th, td {
+                padding: 8px 4px; /* menos padding en móvil */
+              }
+            }
+
+                /* Contadores online/offline - responsivos */
+        .online-offline-container {
+          text-align: center;
+          margin: 20px 0;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 15px;
+        }
+        
+        .online-offline-box {
+          display: inline-block;
+          padding: 12px 24px;
+          border-radius: 12px;
+          font-size: 1.2rem;
+          font-weight: bold;
+          min-width: 220px;
+          max-width: 90%;
+          text-align: center;
+          border: 1px solid;
+        }
+        
+        .online-box {
+          background: rgba(76, 175, 80, 0.2);
+          color: #4CAF50;
+          border-color: #4CAF50;
+        }
+        
+        .offline-box {
+          background: rgba(158, 158, 158, 0.2);
+          color: #9E9E9E;
+          border-color: #9E9E9E;
+        }
+        
+        /* En móviles pequeños, apila verticalmente */
+        @media (max-width: 600px) {
+          .online-offline-container {
+            flex-direction: column;
+            gap: 10px;
+          }
+          .online-offline-box {
+            min-width: 80%;
+            padding: 10px 15px;
+            font-size: 1.1rem;
+          }
+        }
+        
     </style>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5C5SDM9QZG"></script>
@@ -249,12 +324,14 @@
 
     <input id="searchRanking" placeholder="🔍 Buscar guerrero...">
 
-    <div id="onlineCounter" style="display: inline-block; background: rgba(76, 175, 80, 0.2); padding: 10px 20px; border-radius: 10px; font-size: 1.2rem; color: #4CAF50; border: 1px solid #4CAF50; margin: 15px auto; text-align: center;">
-      Jugadores en línea: <strong id="onlineCount">0</strong> 🟢
-    </div>
-
-    <div id="offlineCounter" style="display: inline-block; background: rgba(158, 158, 158, 0.2); padding: 10px 20px; border-radius: 10px; font-size: 1.2rem; color: #9E9E9E; border: 1px solid #9E9E9E; margin: 10px auto; text-align: center;">
-      Jugadores desconectados: <strong id="offlineCount">0</strong> ⚪
+    <div style="text-align: center; margin: 20px 0;">
+      <div id="onlineCounter" style="display: inline-block; background: rgba(76, 175, 80, 0.2); padding: 12px 24px; border-radius: 12px; font-size: 1.2rem; color: #4CAF50; border: 1px solid #4CAF50; margin: 0 10px 10px 10px; min-width: 220px; max-width: 90%;">
+        Jugadores en línea: <strong id="onlineCount">0</strong> 🟢
+      </div>
+    
+      <div id="offlineCounter" style="display: inline-block; background: rgba(158, 158, 158, 0.2); padding: 12px 24px; border-radius: 12px; font-size: 1.2rem; color: #9E9E9E; border: 1px solid #9E9E9E; margin: 0 10px 10px 10px; min-width: 220px; max-width: 90%;">
+        Jugadores desconectados: <strong id="offlineCount">0</strong> ⚪
+      </div>
     </div>
 
     <div class="table-container">
@@ -540,6 +617,7 @@
 </body>
 
 </html>
+
 
 
 
