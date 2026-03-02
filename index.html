@@ -338,38 +338,29 @@
         function getRank(e) { return ranks.find(r => e >= r.min && e <= r.max) || ranks[0]; }
         function getProgress(e, r) { return r.name === "S" ? 100 : Math.max(5, Math.min(100, ((e - r.min) / (r.max - r.min)) * 100)); }
 
-        db.ref('/').on('value', snapshot => {
-            const data = snapshot.val();
-            players = data?.players || [];
-            history = data?.history || [];
-            history.sort((a, b) => {
-                const timeA = a.timestamp || parseInt(a.id) || 0;
-                const timeB = b.timestamp || parseInt(b.id) || 0;
-                return timeB - timeA;
-            });
-            render();
-            verificarSesion();
+                // Listener para status online/offline (solo una vez por carga + actualizaciones)
+        db.ref('status').on('value', snapshot => {
+          const statusData = snapshot.val() || {};
         
-            // === Listener de status: se ejecuta DESPUÉS de render y verificarSesion ===
-            db.ref('status').once('value').then(snapshot => {
-              const statusData = snapshot.val() || {};
+          // Evita bucles infinitos: solo actualiza si hay spans en la página
+          const spans = document.querySelectorAll('[id^="status-"]');
+          if (spans.length === 0) return; // No hay tabla renderizada aún, salimos
         
-              document.querySelectorAll('[id^="status-"]').forEach(span => {
-                const playerName = span.id.replace('status-', '').replace(/_/g, ' ');
-                const userStatus = statusData[playerName];
+          spans.forEach(span => {
+            const rawId = span.id.replace('status-', '');
+            const playerName = rawId.replace(/_/g, ' '); // reconstruye nombre original
         
-                if (userStatus && userStatus.online) {
-                  span.innerHTML = '🟢';
-                  span.style.color = '#4CAF50';
-                } else {
-                  span.innerHTML = '⚪';
-                  span.style.color = '#9E9E9E';
-                }
-              });
+            console.log("Actualizando status para:", playerName); // log temporal para debug
         
-              console.log("Puntos de status actualizados después de render");
-              console.log("Status para", playerName, ":", userStatus);
-            }).catch(err => console.error("Error al leer status:", err));
+            const userStatus = statusData[playerName];
+            if (userStatus && userStatus.online) {
+              span.innerHTML = '🟢';
+              span.style.color = '#4CAF50';
+            } else {
+              span.innerHTML = '⚪';
+              span.style.color = '#9E9E9E';
+            }
+          });
         });
         function render() {
             const rankingEl = document.getElementById('ranking');
@@ -520,6 +511,7 @@
 </body>
 
 </html>
+
 
 
 
