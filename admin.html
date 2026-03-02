@@ -331,12 +331,13 @@
     </div>
   </div>
 
- HTMLCopiar<!-- Firebase Compat - NECESARIO para que funcione tu código actual -->
+ pal):
+HTML<!-- Firebase Compat -->
 <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
 
 <script>
-    // --- CONFIGURACIÓN FIREBASE NUEVA PARA UMK3 ---
     const firebaseConfig = {
         apiKey: "AIzaSyBSmvBdsHLxpEDaLxqZa-nMQ3m9oAccPVQ",
         authDomain: "ranking-umk3.firebaseapp.com",
@@ -347,10 +348,9 @@
         appId: "1:964361830430:web:b183cb5506153934be2e0f"
     };
 
-    // Inicializa Firebase (versión compat)
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const auth = firebase.auth();
+    const auth = firebase.auth();  // ← Ahora sí existe
 
     // Función para autenticar al cargar la página
     function autenticarAdmin() {
@@ -686,6 +686,7 @@
 </body>
 
 </html>
+
 
 
 
