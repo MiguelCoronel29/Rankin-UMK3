@@ -351,16 +351,17 @@
             render();
             verificarSesion();
         
-                        // Listener para status online/offline (solo una vez por carga + actualizaciones)
-            db.ref('status').on('value', snapshot => {
+                        // Listener para status online/offline (normaliza nombre con guion)
+        db.ref('status').on('value', snapshot => {
               const statusData = snapshot.val() || {};
-              console.log("Status data recibida:", statusData); // log para ver si llega online: true
-
-            document.querySelectorAll('[id^="status-"]').forEach(span => {
-                const rawId = span.id.replace('status-', '');
-                const playerName = rawId; // sin replace, usa exactamente el ID (ETR_MICKY)
+              console.log("Status data recibida:", statusData);
             
-                console.log("Span ID:", span.id, "Nombre usado:", playerName, "Status:", statusData[playerName]);
+              document.querySelectorAll('[id^="status-"]').forEach(span => {
+                const rawId = span.id.replace('status-', '');
+                // Normaliza: reemplaza _ por - (para coincidir con Firebase)
+                const playerName = rawId.replace(/_/g, '-');
+            
+                console.log("Span ID:", span.id, "Nombre normalizado:", playerName, "Status:", statusData[playerName]);
             
                 const userStatus = statusData[playerName];
                 if (userStatus && userStatus.online === true) {
@@ -439,7 +440,7 @@
                 loginPrompt.style.display = "none";
                 nameDisplay.innerText = nombre;
         
-                // Marca online SOLO si no lo hizo antes para este usuario
+                // Marca online SOLO una vez por sesión
                 if (!alreadyMarkedOnline[nombre]) {
                     alreadyMarkedOnline[nombre] = true;
         
@@ -451,40 +452,14 @@
                         device: navigator.userAgent
                     }).then(() => {
                         console.log(nombre + " marcado como ONLINE (solo una vez)");
-                    }).catch(err => {
-                        console.error("Error al marcar online:", err);
-                    });
+                    }).catch(err => console.error("Error al marcar online:", err));
         
                     statusRef.onDisconnect().set({
                         online: false,
                         lastActive: firebase.database.ServerValue.TIMESTAMP
                     }).then(() => {
                         console.log("onDisconnect configurado para " + nombre);
-                    }).catch(err => {
-                        console.error("Error en onDisconnect:", err);
-                    });
-        
-                    // Listener de status: se ejecuta DESPUÉS del set() y onDisconnect()
-                    db.ref('status').on('value', snapshot => {
-                        const statusData = snapshot.val() || {};
-                        console.log("Status data recibida después de set:", statusData);
-        
-                        document.querySelectorAll('[id^="status-"]').forEach(span => {
-                            const rawId = span.id.replace('status-', '');
-                            const playerName = rawId; // sin replace adicional, usa el ID tal cual
-        
-                            console.log("Actualizando para", playerName, ":", statusData[playerName]);
-        
-                            const userStatus = statusData[playerName];
-                            if (userStatus && userStatus.online === true) {
-                                span.innerHTML = '🟢';
-                                span.style.color = '#4CAF50';
-                            } else {
-                                span.innerHTML = '⚪';
-                                span.style.color = '#9E9E9E';
-                            }
-                        });
-                    });
+                    }).catch(err => console.error("Error en onDisconnect:", err));
                 }
             } else {
                 userBar.style.display = "none";
@@ -546,6 +521,7 @@
 </body>
 
 </html>
+
 
 
 
