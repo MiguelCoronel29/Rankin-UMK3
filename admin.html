@@ -549,45 +549,52 @@
     }
 
     function rebuild() {
-          players.forEach(p => { p.elo = 0; p.wins = 0; p.losses = 0; p.streak = 0; });
-      
-          [...history].reverse().forEach(h => {
-              const A = players.find(p => p.name === h.p1);
-              const B = players.find(p => p.name === h.p2);
-              if (!A || !B) return;
-      
-              const sa = parseInt(h.s1), sb = parseInt(h.s2);
-              const diff = Math.abs(sa - sb);
-      
-              const winner = sa > sb ? A : B;
-              const loser = sa > sb ? B : A;
-      
-              winner.wins++;
-              loser.losses++;
-      
-              const K = 32;
-              const expected = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
-      
-              let winnerGain = Math.round(K * (1 - expected));
-              let loserLoss  = Math.round(K * expected);
-      
-              // === PENALIZACIÓN EXTRA POR VICTORIA AJUSTADA ===
-              const eloDiff = winner.elo - loser.elo;   // Cuánto más fuerte es el ganador
-      
-              if (eloDiff > 100 && diff <= 1) {           // Favorito claro que gana 5-4
-                  winnerGain -= 8;   // Penalización fuerte
-                  loserLoss -= 6;    // El underdog pierde menos puntos
-              } 
-              else if (eloDiff > 80 && diff <= 2) {
-                  winnerGain -= 5;
-                  loserLoss -= 4;
-              }
-      
-              winner.elo += Math.max(5, winnerGain);      // Mínimo +5 aunque sea favorito
-              loser.elo = Math.max(0, loser.elo - loserLoss);
-          });
+        players.forEach(p => {
+            p.elo = 0;
+            p.wins = 0;
+            p.losses = 0;
+            p.streak = 0;
+        });
     
-            // === Cálculo de racha (se mantiene igual) ===
+        if (history.length > 0) {
+            [...history].reverse().forEach(h => {
+                const A = players.find(p => p.name === h.p1);
+                const B = players.find(p => p.name === h.p2);
+                if (!A || !B) return;
+    
+                const sa = parseInt(h.s1);
+                const sb = parseInt(h.s2);
+                const diff = Math.abs(sa - sb);
+    
+                const winner = sa > sb ? A : B;
+                const loser = sa > sb ? B : A;
+    
+                winner.wins++;
+                loser.losses++;
+    
+                const K = 32;
+                const expected = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
+    
+                let winnerGain = Math.round(K * (1 - expected));
+                let loserLoss  = Math.round(K * expected);
+    
+                // Penalización extra cuando un fuerte gana de forma ajustada
+                const eloDiff = winner.elo - loser.elo;
+    
+                if (eloDiff > 100 && diff <= 1) {           // Ej: 200 vs 30 ganando 5-4
+                    winnerGain -= 8;
+                    loserLoss -= 6;
+                } 
+                else if (eloDiff > 80 && diff <= 2) {
+                    winnerGain -= 5;
+                    loserLoss -= 4;
+                }
+    
+                winner.elo += Math.max(5, winnerGain);
+                loser.elo = Math.max(0, loser.elo - loserLoss);
+            });
+    
+            // Cálculo de racha
             players.forEach(p => {
                 let currentStreak = 0;
                 for (const h of history) {
@@ -605,7 +612,6 @@
             });
         }
     }
-
     function registerMatch() {
       const a = p1Input.value.trim(), b = p2Input.value.trim();
       const sa = parseInt(s1Input.value), sb = parseInt(s2Input.value);
