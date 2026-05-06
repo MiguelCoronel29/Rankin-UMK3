@@ -383,12 +383,12 @@
     let isSaving = false; // Bandera para ignorar actualizaciones propias
 
     const ranks = [
-      { name: "E", min: 0, max: 699, class: "rank-E" },
-      { name: "D", min: 700, max: 999, class: "rank-D" },
-      { name: "C", min: 1000, max: 1299, class: "rank-C" },
-      { name: "B", min: 1300, max: 1599, class: "rank-B" },
-      { name: "A", min: 1600, max: 1899, class: "rank-A" },
-      { name: "S", min: 1900, max: Infinity, class: "rank-S" }
+      { name: "E", min: 0, max: 99, class: "rank-E" },
+      { name: "D", min: 100, max: 299, class: "rank-D" },
+      { name: "C", min: 300, max: 399, class: "rank-C" },
+      { name: "B", min: 400, max: 499, class: "rank-B" },
+      { name: "A", min: 500, max: 599, class: "rank-A" },
+      { name: "S", min: 600, max: Infinity, class: "rank-S" }
     ];
 
     const countryByName = {
@@ -408,7 +408,9 @@
         "PERÚ": "bandera peru.png",
         "PARAGUAY": "bandera paraguay.png",
         "CHILE": "bandera chile.png",
-        "URUGUAY": "bandera uruguay.png"
+        "URUGUAY": "bandera uruguay.png",
+        "ECUADOR": "bandera ecuador.png",   // ← AGREGAR ESTA LÍNEA
+        "VENEZUELA": "bandera venezuela.png"     // clave exacta
       };
       return banderas[country.toUpperCase()] ? `<img src="Imagenes/${banderas[country.toUpperCase()]}" class="player-flag">` : "";
     }
@@ -471,7 +473,7 @@
       players.push({
         name: name,
         password: pass,
-        elo: 500,
+        elo: 0,
         wins: 0,
         losses: 0,
         streak: 0,
@@ -515,14 +517,41 @@
       alert("Ranking sincronizado correctamente.");
     }
 
-    function rebuild() {
-      players.forEach(p => { 
-        p.elo = 500; 
-        p.wins = 0; 
-        p.losses = 0; 
-        p.streak = 0; 
+    function resetInactivePlayers() {
+      if (!confirm("¿Estás seguro de poner en 0 ELO a todos los jugadores que NO tienen ninguna pelea jugada?\n\nEsto no afectará a los que ya jugaron al menos una vez.")) {
+        return;
+      }
+
+      let count = 0;
+      players.forEach(p => {
+        // Verificar si el jugador tiene al menos una pelea
+        const hasMatches = history.some(h => h.p1 === p.name || h.p2 === p.name);
+
+        if (!hasMatches) {
+          p.elo = 0;
+          p.wins = 0;
+          p.losses = 0;
+          p.streak = 0;
+          count++;
+        }
       });
-      
+
+      saveCloud(); // Guarda los cambios en Firebase
+
+      alert(`Se reiniciaron ${count} jugadores que no tenían peleas a 0 ELO.`);
+
+      // Refresca la vista del ranking en admin
+      renderRanking();
+    }
+
+    function rebuild() {
+      players.forEach(p => {
+        p.elo = 0;
+        p.wins = 0;
+        p.losses = 0;
+        p.streak = 0;
+      });
+
       if (history.length > 0) {
         // Procesar historial en orden cronológico (antiguo → nuevo)
         [...history].reverse().forEach(h => {
@@ -532,25 +561,25 @@
             const sa = parseInt(h.s1), sb = parseInt(h.s2);
             const winner = sa > sb ? A : B;
             const loser = sa > sb ? B : A;
-            
-            winner.wins++; 
+
+            winner.wins++;
             loser.losses++;
-            
+
             const diff = Math.abs(sa - sb);  // tu bonus por score (5-0 = 5)
             const K = 32;  // base LoL para ranked
-            
+
             // Fórmula LoL: Expected win probability
             const expected = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
-            
+
             // Ganancia/pérdida LoL + tu bonus diff score
             const gain = K * (1 - expected) + (diff * 2);
             const loss = K * expected + (diff * 2);
-            
+
             winner.elo += Math.round(gain);
             loser.elo = Math.max(0, Math.round(loser.elo - loss));
           }
         });
-        
+
         // Cálculo de racha (mantiene tu lógica actual)
         players.forEach(p => {
           let currentStreak = 0;
@@ -569,6 +598,7 @@
         });
       }
     }
+
     function registerMatch() {
       const a = p1Input.value.trim(), b = p2Input.value.trim();
       const sa = parseInt(s1Input.value), sb = parseInt(s2Input.value);
@@ -637,21 +667,65 @@
       renderPagination("logsPagination", history.length, currentPageLogs, (p) => { currentPageLogs = p; renderLogs(); });
     }
 
-    function renderPagination(id, total, current, callback) {
-      const container = document.getElementById(id);
-      const pages = Math.ceil(total / PAGE_SIZE);
-      if (!container) return;
+    function renderPagination(paginationId, totalItems, currentPageVar, pageChangeCallback) {
+      const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+      const container = document.getElementById(paginationId);
+
+      if (!container) {
+        console.warn(`No se encontró contenedor con id="${paginationId}"`);
+        return;
+      }
+
       container.innerHTML = "";
-      if (pages <= 1) return;
-      for (let i = 1; i <= pages; i++) {
+      if (totalPages <= 1) return;
+
+      const maxVisible = window.innerWidth < 768 ? 7 : 11; // más botones visibles sin texto extra
+      let startPage = Math.max(1, currentPageVar - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+      if (endPage - startPage + 1 < maxVisible) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+
+      // Botones de páginas
+      if (startPage > 1) {
+        const first = document.createElement("button");
+        first.innerText = "1";
+        first.onclick = () => pageChangeCallback(1);
+        container.appendChild(first);
+
+        if (startPage > 2) {
+          const dots = document.createElement("span");
+          dots.innerText = "...";
+          dots.style.padding = "8px 12px";
+          dots.style.color = "#FFD700";
+          container.appendChild(dots);
+        }
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
         const btn = document.createElement("button");
-        btn.textContent = i;
-        if (i === current) btn.classList.add("active");
-        btn.onclick = () => callback(i);
+        btn.innerText = i;
+        if (i === currentPageVar) btn.className = "active";
+        btn.onclick = () => pageChangeCallback(i);
         container.appendChild(btn);
       }
-    }
 
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          const dots = document.createElement("span");
+          dots.innerText = "...";
+          dots.style.padding = "8px 12px";
+          dots.style.color = "#FFD700";
+          container.appendChild(dots);
+        }
+
+        const last = document.createElement("button");
+        last.innerText = totalPages;
+        last.onclick = () => pageChangeCallback(totalPages);
+        container.appendChild(last);
+      }
+    }
     function openEdit(id) {
       let h;
       if (id.startsWith('temp-')) {
@@ -699,7 +773,6 @@
       } else { alert("No hay datos locales para migrar."); }
     };
     document.body.appendChild(btnMigrar);
-      
   </script>
 </body>
 
