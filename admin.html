@@ -549,58 +549,70 @@
     }
 
     function rebuild() {
-      players.forEach(p => {
-        p.elo = 0;
-        p.wins = 0;
-        p.losses = 0;
-        p.streak = 0;
-      });
-
-      if (history.length > 0) {
-        // Procesar historial en orden cronológico (antiguo → nuevo)
-        [...history].reverse().forEach(h => {
-          const A = players.find(p => p.name === h.p1);
-          const B = players.find(p => p.name === h.p2);
-          if (A && B) {
-            const sa = parseInt(h.s1), sb = parseInt(h.s2);
-            const winner = sa > sb ? A : B;
-            const loser = sa > sb ? B : A;
-
-            winner.wins++;
-            loser.losses++;
-
-            const diff = Math.abs(sa - sb);  // tu bonus por score (5-0 = 5)
-            const K = 32;  // base LoL para ranked
-
-            // Fórmula LoL: Expected win probability
-            const expected = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
-
-            // Ganancia/pérdida LoL + tu bonus diff score
-            const gain = K * (1 - expected) + (diff * 2);
-            const loss = K * expected + (diff * 2);
-
-            winner.elo += Math.round(gain);
-            loser.elo = Math.max(0, Math.round(loser.elo - loss));
-          }
-        });
-
-        // Cálculo de racha (mantiene tu lógica actual)
+        // Resetear todos los jugadores
         players.forEach(p => {
-          let currentStreak = 0;
-          for (const h of history) {
-            if (h.p1 !== p.name && h.p2 !== p.name) continue;
-            const won = (h.p1 === p.name && h.s1 > h.s2) || (h.p2 === p.name && h.s2 > h.s1);
-            if (currentStreak === 0) {
-              currentStreak = won ? 1 : -1;
-            } else if ((currentStreak > 0 && won) || (currentStreak < 0 && !won)) {
-              currentStreak += won ? 1 : -1;
-            } else {
-              break;
-            }
-          }
-          p.streak = currentStreak;
+            p.elo = 0;
+            p.wins = 0;
+            p.losses = 0;
+            p.streak = 0;
         });
-      }
+    
+        if (history.length > 0) {
+            // Procesar del más antiguo al más nuevo
+            [...history].reverse().forEach(h => {
+                const A = players.find(p => p.name === h.p1);
+                const B = players.find(p => p.name === h.p2);
+                if (!A || !B) return;
+    
+                const sa = parseInt(h.s1);
+                const sb = parseInt(h.s2);
+                const diff = Math.abs(sa - sb);   // Diferencia de score
+    
+                const winner = sa > sb ? A : B;
+                const loser  = sa > sb ? B : A;
+    
+                winner.wins++;
+                loser.losses++;
+    
+                const K = 32; // Factor base
+                const expected = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
+    
+                // === LÓGICA MEJORADA ===
+                let winnerGain = Math.round(K * (1 - expected));
+                let loserLoss  = Math.round(K * expected);
+    
+                // Bonus según diferencia de score
+                if (diff >= 4) {                    // Muy desigual (5-0, 5-1)
+                    winnerGain += 10 + diff * 2;    // Ganador recibe bastante más
+                    loserLoss  += 8 + diff * 1.5;   // Perdedor es más castigado
+                } 
+                else if (diff >= 2) {               // Medianamente parejo (5-2, 5-3)
+                    winnerGain += 5;
+                    loserLoss  += 4;
+                } 
+                // else → Muy parejo (5-4) → cambios más suaves (ya está en la base)
+    
+                winner.elo += winnerGain;
+                loser.elo = Math.max(0, loser.elo - loserLoss);
+            });
+    
+            // === Cálculo de racha (se mantiene igual) ===
+            players.forEach(p => {
+                let currentStreak = 0;
+                for (const h of history) {
+                    if (h.p1 !== p.name && h.p2 !== p.name) continue;
+                    const won = (h.p1 === p.name && h.s1 > h.s2) || (h.p2 === p.name && h.s2 > h.s1);
+                    if (currentStreak === 0) {
+                        currentStreak = won ? 1 : -1;
+                    } else if ((currentStreak > 0 && won) || (currentStreak < 0 && !won)) {
+                        currentStreak += won ? 1 : -1;
+                    } else {
+                        break;
+                    }
+                }
+                p.streak = currentStreak;
+            });
+        }
     }
 
     function registerMatch() {
