@@ -276,6 +276,10 @@
     <button onclick="addPlayer()">Agregar Guerrero</button>
     <button onclick="forceRebuild()" style="background:#4CAF50; color:white; margin-top:10px;">🔄 Sincronizar y
       Recalcular Ranking</button>
+    <button onclick="resetAllData()" 
+            style="background:#d32f2f; color:white; margin-top:15px; padding:14px 20px; border-radius:8px; font-weight:bold; width:100%; font-size:1.1rem;">
+        🗑️ RESETEAR TODO (Jugadores + Historial)
+    </button>
   </section>
 
   <section>
@@ -773,6 +777,38 @@
       } else { alert("No hay datos locales para migrar."); }
     };
     document.body.appendChild(btnMigrar);
+
+    function resetAllData() {
+        if (!confirm("⚠️ ¿ESTÁS SEGURO? Esta acción borrará TODOS los jugadores y TODO el historial de peleas.\n\nEsta acción NO se puede deshacer.")) {
+            return;
+        }
+    
+        if (!confirm("❌ CONFIRMACIÓN FINAL: ¿Realmente quieres borrar absolutamente todo y empezar de cero?")) {
+            return;
+        }
+    
+        // Borra todo en Firebase
+        db.ref('players').set([]).then(() => {
+            console.log("Players borrados");
+        }).catch(err => console.error("Error borrando players:", err));
+    
+        db.ref('history').set([]).then(() => {
+            console.log("History borrado");
+        }).catch(err => console.error("Error borrando history:", err));
+    
+        // Limpia variables locales
+        players = [];
+        history = [];
+        editingId = null;
+    
+        alert("✅ Todo ha sido reseteado completamente. La página se recargará.");
+        
+        // Recarga la página para ver los cambios
+        setTimeout(() => {
+            location.reload();
+        }, 800);
+    }
+   
   </script>
 </body>
 
