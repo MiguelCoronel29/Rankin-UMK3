@@ -532,7 +532,7 @@
         const hasMatches = history.some(h => h.p1 === p.name || h.p2 === p.name);
 
         if (!hasMatches) {
-          p.elo = 0;
+          p.elo = 100;
           p.wins = 0;
           p.losses = 0;
           p.streak = 0;
@@ -550,7 +550,7 @@
 
     function rebuild() {
         players.forEach(p => {
-            p.elo = 0;
+            p.elo = 100;
             p.wins = 0;
             p.losses = 0;
             p.streak = 0;
